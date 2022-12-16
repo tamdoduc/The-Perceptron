@@ -6,6 +6,17 @@ import numpy as np
 import random
 import pyautogui as pya
 
+testBefore = True
+showBestAnswerDefault = False
+bestw1 = -5.719999999999967
+bestw2 = -4.499999999999962
+bestw0 = 0
+# bestw1 = -2.64
+# bestw2 = -1.81
+# bestw0 = 0
+
+
+
 # Input and labels Feature1;Feature2;Label
 x = [
     [0.72, 0.82, -1],
@@ -18,9 +29,9 @@ x = [
     [0.66, 0.24, -1],
     [0.72, -0.15, -1],
     [0.35, 0.01, -1],
-    [-0.11, 0.01, 1],
+    [-0.11, 0.01, -1],  #test
     [0.31, -0.96, 1],
-    [0.0, -0.26, 1],  # Test
+    [0.0, -0.26, 1],
     [-0.43, -0.65, 1],
     [0.57, -0.97, 1],
     [-0.72, -0.64, 1],
@@ -51,6 +62,12 @@ w1 = 0
 w2 = 0
 w0 = 1
 
+# Best Weights
+bw1 = 0
+bw2 = 0
+bw0 = 1
+minError = 999999;
+
 # Maximum number allowed of epochs // Số vòng lặp
 n = 100
 
@@ -75,6 +92,12 @@ for k in range(1, n):
 
         output = x[i][0] * w1 + x[i][1] *w2 + w0
 
+        if abs(output) < minError:
+            minError = output
+            bw1 = w1
+            bw2 = w2
+            bw0 = w0
+
         if output > 0:
             y = 1
         else:
@@ -91,10 +114,13 @@ for k in range(1, n):
 
         print("\n" + answer)
 
+
         # ----------------  Plotting the Graph below -----------
         plt.clf()
-        plt.title(
-            'Loop number %s\n' % (str(k)) + 'W0: %s  ' % (str(w[0])) + 'W1: %s   ' % (w[1]) + 'Bias: %s' % (str(bias)))
+        if (testBefore == False):
+            plt.title('Loop number %s\n' % (str(k)) + 'W1: %s  ' % (str(w1)) + 'W2: %s   ' % (w2) + 'W0: %s' % (str(w0)))
+        else:
+            plt.title('Best Answer Before W1: %s  ' % (str(w1)) + 'W2: %s   ' % (w2) + 'W0: %s' % (str(w0)))
         plt.grid(False)
         plt.xlim(-1, 1)
         plt.ylim(-1, 1)
@@ -102,21 +128,28 @@ for k in range(1, n):
         xA = 1
         xB = -1
 
-        if w[1] != 0:
-            yA = (-w[0] * xA - bias) / w[1]
-            yB = (-w[0] * xB - bias) / w[1]
+        if w2 != 0:
+            yA = (-w1 * xA - w0) / w2
+            yB = (-w1 * xB - w0) / w2
+            ByA = (-bestw1 * xA - bestw0) / bestw2
+            ByB = (-bestw1 * xB - bestw0) / bestw2
         else:
-            xA = -bias / w[0]
-            xB = -bias / w[0]
+            xA = -w0 / w1
+            xB = -w0 / w2
 
             yA = 1
             yB = -1
 
-        # Draw best line (black)
-        plt.plot([BEST_X, BEST_Y], [-1, 1], color='k', linestyle='-', linewidth=1)
+        if (testBefore == False):
+            # Draw Best Line Before
+            plt.plot([xA, xB], [yA, yB], color='g', linestyle='-', linewidth=2)
+        else:
+            # Draw BestLine Caculated
+            plt.plot([xA, xB], [ByA, ByB], color='r', linestyle='-', linewidth=1)
 
-        # Draw line number(k)
-        plt.plot([xA, xB], [yA, yB], color='g', linestyle='-', linewidth=2)
+        if showBestAnswerDefault:
+            # Draw best line (black)
+            plt.plot([BEST_X, BEST_Y], [-1, 1], color='k', linestyle='-', linewidth=1)
 
         # Draw blue points
         # x_coords, y_coords = get_points(data_dictionary, '-1')
@@ -137,17 +170,20 @@ for k in range(1, n):
 
         plt.show()
 
-        plt.pause(0.5)
+        plt.pause(0.05)
 
-        # try:
-        #     while True:
-        #         a = 0
-        # except KeyboardInterrupt:
-        #     pass
+        if (testBefore == True):
+            while True:
+                a=0
 
     if hits == len(x):
         print("\n------------------------------------------")
         print("\nAlgorithm has learn with" + str(k) + " iterations!")
+        minError = 0
+        bw1 += w1
+        bw2 += w2
+        bw0 += w0
+        break
     else:
         print("\n------------------------------------------")
         print("\nAlgorithm has learn with" + str(k) + " iterations!")
@@ -155,3 +191,4 @@ for k in range(1, n):
 ...
 
 print("\nDone!\n")
+print("Best W: w1"+str(w1)+" ,w2"+str(w2)+" ,w0"+str(w0)+" ,\n Output: "+str(minError))

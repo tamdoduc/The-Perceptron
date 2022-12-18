@@ -6,7 +6,7 @@ import numpy as np
 import random
 import pyautogui as pya
 
-testBefore = True
+testBefore = False
 showBestAnswerDefault = False
 bestw1 = -5.719999999999967
 bestw2 = -4.499999999999962
@@ -86,17 +86,12 @@ plt.ion()
 for k in range(1, n):
     hits = 0
     print("\n------------------- Loop number: " + str(k) + "------------------");
+    sumLost = 0
 
     # Send all data points into the learning algorithm
     for i in range(0, len(x)):
 
         output = x[i][0] * w1 + x[i][1] *w2 + w0
-
-        if abs(output) < minError:
-            minError = output
-            bw1 = w1
-            bw2 = w2
-            bw0 = w0
 
         if output > 0:
             y = 1
@@ -111,6 +106,8 @@ for k in range(1, n):
             w1 += x[i][2] * x[i][0]
             w2 += x[i][2] * x[i][1]
             w0 += x[i][2]
+
+            sumLost += abs(output)
 
         print("\n" + answer)
 
@@ -175,14 +172,14 @@ for k in range(1, n):
         if (testBefore == True):
             while True:
                 a=0
-
+    if abs(sumLost) < minError:
+        minError = sumLost
+        bw1 = w1
+        bw2 = w2
+        bw0 = w0
     if hits == len(x):
         print("\n------------------------------------------")
         print("\nAlgorithm has learn with" + str(k) + " iterations!")
-        minError = 0
-        bw1 += w1
-        bw2 += w2
-        bw0 += w0
         break
     else:
         print("\n------------------------------------------")
